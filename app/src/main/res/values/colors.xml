@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <!-- Chart Colors -->
+    <color name="chart_temperature">#ED8989</color>
+    <color name="chart_ph">#F0DF83</color>
+    <color name="chart_oxygen">#C4F296</color>
+    <color name="chart_water_level">#80D6F2</color>
+
+</resources>
