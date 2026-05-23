@@ -110,15 +110,23 @@ public class DashboardFragment extends Fragment  {
     private void setupAquariumListObserver() {
         // Watch for changes in the list of aquariums (e.g., after adding one)
         viewModel.getAvailableAquariums().observe(getViewLifecycleOwner(), list -> {
-            if (list != null && !list.isEmpty()) {
-                updateDropdownAdapter(list);
-            }
+            // Always update, even if list is empty, to ensure the UI is in sync.
+            updateDropdownAdapter(list != null ? list : new ArrayList<>());
         });
 
-        // Sync the text in the dropdown with the currently selected aquarium
+        // Sync the text in the dropdown with the currently selected aquarium's name
         viewModel.getSelectedAquariumId().observe(getViewLifecycleOwner(), selectedId -> {
-            if (selectedId != null) {
-                aquariumSelector.setText(selectedId, false);
+            List<Aquarium> list = viewModel.getAvailableAquariums().getValue();
+            if (list != null && selectedId != null) {
+                for (Aquarium aquarium : list) {
+                    if (aquarium.getId().equals(selectedId)) {
+                        aquariumSelector.setText(aquarium.getName(), false);
+                        return;
+                    }
+                }
+            }
+            if (selectedId == null) {
+                aquariumSelector.setText("", false);
             }
         });
     }
@@ -130,14 +138,14 @@ public class DashboardFragment extends Fragment  {
      * @param listOfAquariums The list of {@link Aquarium} objects to display in the dropdown.
      */
     private void updateDropdownAdapter(List<Aquarium> listOfAquariums) {
-        if (listOfAquariums == null || getContext() == null) return;
+        if (getContext() == null) return;
 
-        // 1. Use Streams for a more readable transformation
+        // 1. Transform the list of Aquarium objects into a list of names for the dropdown
         List<String> aquariumNames = listOfAquariums.stream()
                 .map(Aquarium::getName)
                 .collect(Collectors.toList());
 
-        // 2. Use the specific type in the constructor
+        // 2. Create and set the adapter
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
@@ -146,20 +154,26 @@ public class DashboardFragment extends Fragment  {
 
         aquariumSelector.setAdapter(adapter);
 
-        // 3. Robust selection handling
+        // 3. Selection handling - map the clicked position back to the Aquarium ID
         aquariumSelector.setOnItemClickListener((parent, view, position, id) -> {
-            // Instead of just passing a String, get the actual object from the original list
             Aquarium selectedAquarium = listOfAquariums.get(position);
-
-            // Pass the ID or the whole object to the ViewModel for better reliability
-            viewModel.setSelectedAquarium(selectedAquarium.getName());
+            viewModel.setSelectedAquarium(selectedAquarium.getId());
         });
 
-        // Automatically select the first aquarium if nothing is selected
-        if (viewModel.getSelectedAquariumId().getValue() == null && !listOfAquariums.isEmpty()) {
+        // Automatically select the first aquarium if nothing is selected and we have data
+        String currentSelection = viewModel.getSelectedAquariumId().getValue();
+        if (currentSelection == null && !listOfAquariums.isEmpty()) {
             Aquarium firstAquarium = listOfAquariums.get(0);
-            viewModel.setSelectedAquarium(firstAquarium.getName());
+            viewModel.setSelectedAquarium(firstAquarium.getId());
             aquariumSelector.setText(firstAquarium.getName(), false);
+        } else if (currentSelection != null) {
+            // If we have a selection, make sure the text matches the name (in case it changed)
+            for (Aquarium aquarium : listOfAquariums) {
+                if (aquarium.getId().equals(currentSelection)) {
+                    aquariumSelector.setText(aquarium.getName(), false);
+                    break;
+                }
+            }
         }
     }
 

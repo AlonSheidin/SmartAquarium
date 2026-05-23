@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.smartaquarium.data.viewModel.aquariumData.AquariumDataViewModel;
 import com.example.smartaquarium.R;
 import com.example.smartaquarium.data.viewModel.aquariumData.AquariumDataViewModel;
 import com.example.smartaquarium.ui.dashboard.DashboardFragment;
@@ -88,6 +89,10 @@ public class LoginFragment extends Fragment {
         authenticationService.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        // Notify the ViewModel that a user is now authenticated
+                        updateViewModelAuthenticationState();
+                        
+                        showBottomNavigationBar();
                         Toast.makeText(getContext(), "Account created!", Toast.LENGTH_SHORT).show();
                         navigateToDashboardScreen();
                     } else {
@@ -115,6 +120,9 @@ public class LoginFragment extends Fragment {
         authenticationService.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        // Notify the ViewModel that a user is now authenticated
+                        updateViewModelAuthenticationState();
+
                         // On successful login, show the main navigation
                         showBottomNavigationBar();
                         Toast.makeText(getContext(), "Welcome!", Toast.LENGTH_SHORT).show();
@@ -147,5 +155,13 @@ public class LoginFragment extends Fragment {
         requireActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.nav_host_fragment, new DashboardFragment())
                 .commit();
+    }
+
+    /**
+     * Notifies the AquariumDataViewModel about the new authentication state.
+     */
+    private void updateViewModelAuthenticationState() {
+        AquariumDataViewModel viewModel = new ViewModelProvider(requireActivity()).get(AquariumDataViewModel.class);
+        viewModel.checkUserAuthentication();
     }
 }

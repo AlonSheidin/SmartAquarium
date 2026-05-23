@@ -27,6 +27,7 @@ import com.example.smartaquarium.utils.interfaces.IConnection;
 import com.example.smartaquarium.utils.interfaces.IDataListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,6 +147,9 @@ public class AquariumDataViewModel extends AndroidViewModel implements IDataList
                 // User is logged out, cancel the job
                 AquariumJobScheduler.cancelAquariumAlertJob(getApplication());
                 Log.d(TAG, "Aquarium alert job cancelled for unauthenticated user.");
+                // Clear selection and other user-specific state
+                selectedAquariumId.setValue(null);
+                latestDataPoint.setValue(null);
             }
         });
 
@@ -163,7 +167,7 @@ public class AquariumDataViewModel extends AndroidViewModel implements IDataList
 
     /**
      * Updates the data source for available aquariums based on the authenticated user ID.
-     * If a valid user is logged in, it fetches the list of aquariums; otherwise, it removes the source.
+     * If a valid user is logged in, it fetches the list of aquariums; otherwise, it provides an empty list.
      *
      * @param userId The ID of the authenticated user.
      */
@@ -172,6 +176,8 @@ public class AquariumDataViewModel extends AndroidViewModel implements IDataList
         if (isValidUser(userId)) {
             currentAquariumsSource = firestoreDataSource.getListOfAquariums(userId);
             availableAquariums.addSource(currentAquariumsSource, availableAquariums::setValue);
+        } else {
+            availableAquariums.setValue(new ArrayList<>());
         }
     }
 
@@ -284,7 +290,7 @@ public class AquariumDataViewModel extends AndroidViewModel implements IDataList
         String userId = authenticatedUserId.getValue();
         if (isValidUser(userId)) {
             firestoreDataSource.createAquarium(userId, name)
-                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Aquarium created successfully: " + name))
+                    .addOnSuccessListener(docRef -> Log.d(TAG, "Aquarium created successfully with ID: " + docRef.getId()))
                     .addOnFailureListener(e -> Log.e(TAG, "Error creating aquarium: " + name, e));
         } else {
             Log.e(TAG, "Cannot create aquarium: User not authenticated.");

@@ -3,12 +3,15 @@ package com.example.smartaquarium.ui.main;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -32,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     public IConnection connection;
     private static AquariumDataViewModel aquariumDataViewModel;
+
+    private static final String PREFS_NAME = "SmartAquariumPrefs";
+    private static final String KEY_DARK_MODE = "isDarkMode";
 
     void init()
     {
@@ -76,12 +82,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Load and apply theme before super.onCreate and setContentView
+        loadAndApplyTheme();
+        
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
+        setContentView(R.layout.activity_main);
         init();
         FirebaseUser currentUser = auth.getCurrentUser();
 
-        setContentView(R.layout.activity_main);
         setupBottomNavigation();
 
 
@@ -102,6 +111,16 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    private void loadAndApplyTheme() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean isDarkMode = prefs.getBoolean(KEY_DARK_MODE, false);
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     private void setupBottomNavigation() {

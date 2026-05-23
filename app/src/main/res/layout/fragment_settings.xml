@@ -12,15 +12,35 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <!-- ===== Appearance Settings ===== -->
+        <TextView
+            android:id="@+id/label_appearance"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Appearance"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switch_dark_mode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Dark Mode"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/label_appearance" />
+
         <!-- ===== Temperature Settings ===== -->
         <TextView
             android:id="@+id/label_temperature_settings"
             style="@style/TextAppearance.MaterialComponents.Headline6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:text="Temperature Alerts (°C)"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/switch_dark_mode" />
 
         <LinearLayout
             android:id="@+id/layout_temperature"
